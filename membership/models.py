@@ -36,7 +36,8 @@ class UserMembership(models.Model):
     end_date = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-       return self.user.username
+       #return self.user.username
+       return f"{self.user.username} - {self.membership.membership_type}"
 
 class Subscription(models.Model):
     user_membership = models.ForeignKey(UserMembership,

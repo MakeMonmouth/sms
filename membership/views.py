@@ -2,21 +2,24 @@ import stripe
 
 from django.shortcuts import render, redirect
 
-from django.conf import settings # new
+from django.conf import settings
+from django.contrib.auth.models import User
 from django.http.response import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt # new
 from django.views.generic.base import TemplateView
 
-## views.py
 from django.views.generic import ListView
 from membership.models import Membership, UserMembership, Subscription
+
+
 class MembershipView(ListView):
     model = Membership
     template_name = 'memberships/list.html'
 
+
     def get_user_membership(self, user):
-        print(f"Looking for user {user.user}")
-        user_membership_qs = UserMembership.objects.filter(user=user.user)
+        if type(user) != "AnonymousUser":
+            user_membership_qs = UserMembership.objects.filter(user=user.user)
         if user_membership_qs.exists():
             return user_membership_qs.first()
         return None
@@ -24,8 +27,7 @@ class MembershipView(ListView):
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(**kwargs)
         current_membership = self.get_user_membership(self.request)
-        print(current_membership)
-        if current_membership.membership is not None:
+        if current_membership is not None:
             context['current_membership'] = str(current_membership.membership)
         else:
             context['current_membership'] = None
@@ -40,7 +42,6 @@ def stripe_config(request):
 @csrf_exempt
 def create_checkout_session(request):
     if request.method == 'POST':
-        print(request)
         domain_url = 'http://localhost:8000/memberships/'
         stripe.api_key = settings.STRIPE_SECRET_KEY
         try:
@@ -53,16 +54,42 @@ def create_checkout_session(request):
             # For full details see https://stripe.com/docs/api/checkout/sessions/create
 
             # ?session_id={CHECKOUT_SESSION_ID} means the redirect will have the session ID set as a query param
-            checkout_session = stripe.checkout.Session.create(
-                success_url=domain_url + 'success?session_id={CHECKOUT_SESSION_ID}',
-                cancel_url=domain_url + 'cancelled/',
-                payment_method_types=['card'],
-                mode='payment',
-                line_items=[{
-                    'price': request.POST['priceId']
-                    }
-                ]
-            )
+            user_qs = User.objects.filter(id=request.user.id)
+            if user_qs.exists():
+                # We have an existing user/subscription pair
+                user = user_qs.first()
+                existing_membership = UserMembership.objects.filter(user=user).first()
+
+                checkout_session = stripe.checkout.Session.create(
+                    client_reference_id=f"{request.user.id};{request.POST['priceId']}",
+                    success_url=domain_url + 'success?session_id={CHECKOUT_SESSION_ID}',
+                    cancel_url=domain_url + 'cancelled/',
+                    payment_method_types=['card'],
+                    mode='subscription',
+                    customer_email = request.user.email,
+                    billing_address_collection = "required",
+                    line_items=[{
+                        'price': request.POST['priceId'],
+                        'quantity': 1
+                        }
+                    ]
+                )
+            else:
+                checkout_session = stripe.checkout.Session.create(
+                    client_reference_id=f"{request.user.id};{request.POST['priceId']}",
+                    success_url=domain_url + 'success?session_id={CHECKOUT_SESSION_ID}',
+                    cancel_url=domain_url + 'cancelled/',
+                    payment_method_types=['card'],
+                    mode='subscription',
+                    customer = existing_membership.stripe_customer_id,
+                    customer_email = request.user.email,
+                    billing_address_collection = "required",
+                    line_items=[{
+                        'price': request.POST['priceId'],
+                        'quantity': 1
+                        }
+                    ]
+                )
             response = checkout_session.url
             return redirect(response)
         except Exception as e:
@@ -73,7 +100,6 @@ def create_checkout_session(request):
 
 class SuccessView(TemplateView):
     template_name = 'memberships/success.html'
-
 
 class CancelledView(TemplateView):
     template_name = 'memberships/cancellation.html'
@@ -100,29 +126,30 @@ def stripe_webhook(request):
     # Handle the checkout.session.completed event
     if event['type'] == 'checkout.session.completed':
         print("Payment was successful.")
-        # TODO: run some custom code here
+        sub_details = event['data']['object']['client_reference_id'].split(';')
+        user_id = sub_details[0]
+        price_id = sub_details[1]
+        stripe_cust_id = event['data']['object']['customer']
+
+        membership_qs = Membership.objects.filter(stripe_price_id=price_id)
+        if membership_qs.exists():
+            membership = membership_qs.first()
+
+        user_qs = User.objects.filter(id=user_id)
+        if user_qs.exists():
+            user = user_qs.first()
+            existing_membership = UserMembership.objects.filter(user=user)
+
+        if not existing_membership.exists():
+            newsub = UserMembership()
+            newsub.user = user 
+            newsub.membership = membership
+            newsub.stripe_customer_id = stripe_cust_id
+            newsub.save()
+        else:
+            em = existing_membership.first()
+            em.membership = membership
+            em.save()
+
 
     return HttpResponse(status=200)
-
-#import datetime
-#from django import forms
-#from django.forms import ModelForm
-#from django.contrib.auth.models import User
-#from django.contrib.auth.forms import UserCreationForm
-#from django.conf import settings
-#from membership.models import Membership, UserMembership, Subscription
-#class SignUpForm(UserCreationForm):
-#    part_time_member = Membership.objects.get(membership_type=)
-#    class Meta(UserCreationForm.Meta):
-#       model = User
-#    def save(self):
-#      user = super().save(commit=False)
-#      user.save()
-#      # Creating a new UserMembership
-#      user_membership = UserMembership.objects.create(user=user, membership=self.part_time_member)
-#      user_membership.save()
-#      # Creating a new UserSubscription
-#      user_subscription = Subscription()
-#      user_subscription.user_membership = user_membership
-#      user_subscription.save()
-#      return user
