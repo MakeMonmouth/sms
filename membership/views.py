@@ -9,19 +9,22 @@ from django.views.decorators.csrf import csrf_exempt # new
 from django.views.generic.base import TemplateView
 
 from django.views.generic import ListView
+from django.contrib.auth.mixins import LoginRequiredMixin
+
 from membership.models import Membership, UserMembership, Subscription
 
 
-class MembershipView(ListView):
+class MembershipView(LoginRequiredMixin, ListView):
     model = Membership
     template_name = 'memberships/list.html'
 
 
     def get_user_membership(self, user):
-        if type(user) != "AnonymousUser":
+        print(f"User: { user.user.username }")
+        if user.user.username != "":
             user_membership_qs = UserMembership.objects.filter(user=user.user)
-        if user_membership_qs.exists():
-            return user_membership_qs.first()
+            if user_membership_qs.exists():
+                return user_membership_qs.first()
         return None
 
     def get_context_data(self, *args, **kwargs):
