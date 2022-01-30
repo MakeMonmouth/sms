@@ -4,42 +4,44 @@
 {% block title %}Sign Up{% endblock %}
 
 {% block content %}
-    <div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
-      <h1 class="display-4">Become a member</h1>
-      <p class="lead">Before we can get you started with your membership, we need to create you an account using the form below.</p>
-    </div>
+  <section class="page-section bg-light" id="signup">
+    <div class="container">
+      <div class="text-center">
+        <h2 class="section-heading text-uppercase">Sign up to Make Monmouth</h2>
+        <h3 class="section-subheading">Before we can get you subscribed, we need to know a little bit about you</h3>
+      </div>
 
     <div class="container">
       <form method="post">
         {% csrf_token %}
 	   {{ form.non_field_errors }}
-      <div class="form-group">
-        <label for="{{ form.first_name.id_for_label }}">First Name:</label>
+      <div class="form-row">
+            <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name:</label>
         {{ form.first_name }}
         {{ form.first_name.errors }}
             </div>
     <div class="form-group">
-        <label for="{{ form.last_name.id_for_label }}">Last Name:</label>
+        <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name:</label>
         {{ form.last_name }}
         {{ form.last_name.errors }}
     </div>
     <div class="form-group">
-        <label for="{{ form.email.id_for_label }}">Email Address:</label>
+        <label for="{{ form.email.id_for_label }}" class="form-label">Email Address:</label>
         {{ form.email }}
         {{ form.email.errors }}
             </div>
     <div class="form-group">
-        <label for="{{ form.username.id_for_label }}">Username:</label>
+        <label for="{{ form.username.id_for_label }}" class="form-label">Username:</label>
         {{ form.username }}
         {{ form.username.errors }}
             </div>
     <div class="form-group">
-        <label for="{{ form.password1.id_for_label }}">Password:</label>
+        <label for="{{ form.password1.id_for_label }}" class="form-label">Password:</label>
         {{ form.password1 }}
         {{ form.password1.errors }}
     </div>
     <div class="form-group">
-        <label for="{{ form.password2.id_for_label }}">Confirm Password:</label>
+        <label for="{{ form.password2.id_for_label }}" class="form-label">Confirm Password:</label>
         {{ form.password2 }}
         {{ form.password2.errors }}
     </div>

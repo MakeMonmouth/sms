@@ -1,11 +1,28 @@
-{% extends "base.html" %}
-
-{% block content %}
-<!-- templates/registration/login.html -->
-<h2>Log In</h2>
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Log In</button>
-</form>
-{% endblock %}
+  {% extends "base.html" %} {% block title %}Log in to Make
+  Monmouth{% endblock %} {% block content %} 
+  <!-- templates/registration/login.html -->
+  <section class="page-section" id="contact">
+    <div class="container">
+      <div class="text-center">
+        <h2 class="section-heading text-uppercase">Log In</h2>
+        <h3 class="section-subheading" style="color: #fff;">Please log in to access our membership area</h3>
+      </div>
+      <form id="contactForm" method="post" name="contactForm">
+        {% csrf_token %} {{ form.non_field_errors }}
+        <div class="row align-self-center md-8">
+            <div class="col">
+              <label class="section-heading">{{ form.username.label }}</label>
+              {{ form.username }}
+            </div>
+        </div>
+        <div class="row align-self-center md-8">
+            <div class="col">
+              <label class="section-heading">{{ form.password.label }}</label>
+              {{ form.password }}
+            </div>
+        </div>
+          <button type="submit">Log In</button>
+        </div>
+      </form>
+    </div>
+  </section>{% endblock %}

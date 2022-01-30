@@ -12,14 +12,17 @@ class UserLoginForm(UserCreationForm):
         super(UserLoginForm, self).__init__(*args, **kwargs)
 
     username = UsernameField(widget=forms.TextInput(
-        attrs={'class': 'form-control', 'placeholder': '', 'id': 'hello'}))
+        attrs={'class': 'form-control', 'placeholder': 'Username', 'id': 'username'}
+        )
+    )
     password = forms.CharField(widget=forms.PasswordInput(
         attrs={
             'class': 'form-control',
-            'placeholder': '',
-            'id': 'hi',
-        }
-))
+            'placeholder': 'Password',
+            'id': 'password',
+            }
+        )
+    )
 
 class SignUpForm(UserCreationForm):
     def __init__(self, *args, **kwargs):

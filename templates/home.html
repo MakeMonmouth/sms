@@ -3,10 +3,91 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-{% if user.is_authenticated %}
-  Hi {{ user.username }}!
-{% else %}
-  <p>You are not logged in</p>
-  <a href="{% url 'login' %}">Log In</a>
-{% endif %}
+        <!-- Masthead-->
+        <header class="masthead">
+            <div class="container">
+                <div class="masthead-subheading">Welcome to Make Monmouth</div>
+                <div class="masthead-heading text-uppercase">It's Nice To Meet You</div>
+                <a class="btn btn-primary btn-xl text-uppercase" href="#who-are-we">Tell Me More</a>
+            </div>
+        </header>
+        <!-- Services-->
+        <section class="page-section" id="who-are-we">
+            <div class="container">
+                <div class="text-center">
+                    <h2 class="section-heading text-uppercase">Who are we?</h2>
+                    <h3 class="section-subheading text-muted">Open to anyone over the age of 18, Make Monmouth is a space where you can create, design, tinker, and hack on your projects in the company of like-minded people.</h3>
+                </div>
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <span class="fa-stack fa-4x">
+                            <i class="fas fa-circle fa-stack-2x text-primary"></i>
+                            <i class="fas fa-toolbox fa-stack-1x fa-inverse"></i>
+                        </span>
+                        <h4 class="my-3">Equipment Access</h4>
+                        <p class="text-muted">Gain access to tools that you've always wanted to use.</p>
+                        <p class="text-muted">From multimeters and sewing machines to 3D printers and laser cutters we hope to eventually provide all the tools you need to finish that dream project</p>
+                    </div>
+                    <div class="col-md-4">
+                        <span class="fa-stack fa-4x">
+                            <i class="fas fa-circle fa-stack-2x text-primary"></i>
+                            <i class="fas fa-comments fa-stack-1x fa-inverse"></i>
+                        </span>
+                        <h4 class="my-3">Meet others</h4>
+                        <p class="text-muted">Deep down, all makers are geeks.</p>
+                        <p class="text-muted">We want to provide a shared space in which folks from all walks of life can create in their own style, whilst meeting other people who understand the passion to build thing regardless of the medium used </p>
+                    </div>
+                    <div class="col-md-4">
+                        <span class="fa-stack fa-4x">
+                            <i class="fas fa-circle fa-stack-2x text-primary"></i>
+                            <i class="fas fa-rocket fa-stack-1x fa-inverse"></i>
+                        </span>
+                        <h4 class="my-3">Build Amazing Things</h4>
+                        <p class="text-muted">It doesn't matter what you do</p>
+                        <p class="text-muted">Previous meetings have included everything from furniture painting and restoration works through to Artificial Intelligence and Robots.  It doesn't matter what you make, or how you make it, we'll find room for you to express yourself</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="page-section" id="where-do-we-meet">
+            <div class="container">
+                <div class="text-center">
+                    <h2 class="section-heading text-uppercase">Where do we meet?</h2>
+                    <h3 class="section-subheading text-muted">You can find us at the Woodland Community Stores in Wyesham, Monmouth</h3>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <p class="text-muted">We meet twice a month, with the first Thursday of the month open to guests and people wishing to become members.</p>
+                    <p class="text-muted">You can find us at:
+                    <br />
+                    Woodland Stores,<br/>
+                    82 Woodland View,<br />
+                    Wyesham,</br />
+                    Monmouth,</br>
+                    NP25 3LB</p>
+                    <p class="text-muted">Please note that this address is not to be used for correspondence</p>
+                </div>
+                <div class="col-md-6">
+                  <div id="location-map"></div>
+                      <script>
+                        var map;
+                          const shop = { lat: 51.804570728210855, lng: -2.698142463301246};
+                        function initMap() {
+                          map = new google.maps.Map(document.getElementById('location-map'), {
+                            center: shop,
+                            zoom: 16, 
+                          });
+
+                           // The marker, positioned at Uluru
+  const marker = new google.maps.Marker({
+    position: shop,
+    map: map,
+  });
+                        }
+                      </script>
+                      <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyATT_8Je9Li3JOZZIjEzubC2jlEPCfAsmM&callback=initMap"
+                      async defer></script>
+                </div>
+            </div>
+        </section>
 {% endblock %}
