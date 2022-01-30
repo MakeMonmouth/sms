@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure--f3-g#21(5+(k6am%syz&pj=ovb%(n01&su2gz76*+4765vnw8
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("SMS_DEBUG", True) 
 
-ALLOWED_HOSTS = ['desolate-retreat-41465.herokuapp.com']
+ALLOWED_HOSTS = ['localhost', 'desolate-retreat-41465.herokuapp.com']
 
 
 # Application definition
