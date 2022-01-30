@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure--f3-g#21(5+(k6am%syz&pj=ovb%(n01&su2gz76*+4765vnw8'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("SMS_DEBUG", True) 
 
 ALLOWED_HOSTS = []
 
