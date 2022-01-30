@@ -90,4 +90,32 @@
                 </div>
             </div>
         </section>
+        <section class="page-section" id="how-do-i-join">
+            <div class="container">
+                <div class="text-center">
+                    <h2 class="section-heading text-uppercase">How do I join?</h2>
+                    <h3 class="section-subheading text-muted">Interested in signing up? You can come along to one of our Open Days on the first Thursday of every month, or dive in and select one of the options below</h3>
+                </div>
+      <div class="card-deck mb-3 text-center">
+         {% for membership in memberships %}
+             {% if membership.membership_type != 'Core' %}
+              <div class="card mb-4 box-shadow">
+               <div class="card-header">
+                 <h4 class="my-0 font-weight-normal">{{ membership.membership_type }} Membership</h4>
+               </div>
+               <div class="card-body">
+                 <h1 class="card-title pricing-card-title">£{{ membership.price }} <small class="text-muted">/ mo</small></h1>
+		 {% autoescape off %}
+		     {{ membership.description}}
+                 {% endautoescape %}
+		 <form action="/accounts/signup/" method="GET">
+		 <button id="submitBtn" type="submit" class="btn btn-lg btn-block btn-outline-primary">Sign up</button>
+		 </form>
+               </div>
+              </div>
+             {% endif %}
+         {% endfor %}
+      </div>
+            </div>
+        </section>
 {% endblock %}

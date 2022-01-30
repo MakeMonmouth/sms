@@ -21,10 +21,12 @@ from django.contrib import admin
 from django.urls import path
 from django.views.generic.base import TemplateView
 
+from sms.views import HomeView
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('memberships/', include('membership.urls')),
     path('accounts/', include('accounts.urls')),
     path('accounts/', include('django.contrib.auth.urls')),
-    path('', TemplateView.as_view(template_name='home.html'), name='home'),
+    path('', HomeView.as_view(), name="home"),
 ]  + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
