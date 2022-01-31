@@ -45,7 +45,7 @@ def stripe_config(request):
 @csrf_exempt
 def create_checkout_session(request):
     if request.method == 'POST':
-        domain_url = 'http://localhost:8000/memberships/'
+        domain_url = f"{request.build_absolute_uri('/')}/memberships/"
         stripe.api_key = settings.STRIPE_SECRET_KEY
         try:
             # Create new Checkout Session for the order
