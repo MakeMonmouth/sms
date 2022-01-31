@@ -38,6 +38,9 @@ ALLOWED_HOSTS = ['localhost', 'desolate-retreat-41465.herokuapp.com']
 INSTALLED_APPS = [
     'membership',
     'accounts',
+    'shop',
+    'phonenumber_field',
+    'sms_admin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
