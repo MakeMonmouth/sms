@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Welcome to the Make Monmouth Shop{% endblock %}
+
+{% block content %}
+    <section>
+    <div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+      <h1 class="display-4">Welcome to our shop</h1>
+    </div>
+    <div class="container">
+         {% for object in object_list %}
+              <div class="row" style="height: 150px;">
+                  <div class="col-md-3">
+                    <img style="height: 150px;" src="/{{ object.image }}" alt="Card image cap">
+                  </div>
+                  <div class="col">
+                 <h4 class="my-0 font-weight-normal">{{ object.name }}</h4>
+                 <p>
+		 {% autoescape off %}
+		     {{ object.description}}
+             {% endautoescape %}</p>
+                 <p>
+                 £{{ object.member_price }}
+                 </p>
+               </div>
+              </div>
+         {% endfor %}
+    </section>
+{% endblock %}
+

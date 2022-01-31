@@ -1,6 +1,8 @@
 from django.utils import timezone
 from django.db import models
 from django.conf import settings
+from django.contrib.humanize.templatetags.humanize import naturaltime
+
 
 from phonenumber_field.modelfields import PhoneNumberField
 
@@ -36,6 +38,9 @@ class Product(models.Model):
     guest_price = models.DecimalField(default=0,
             decimal_places=2,
             max_digits=5)
+    rrp = models.DecimalField(default=0,
+            decimal_places=2,
+            max_digits=5)
     category = models.ForeignKey(ProductCategory, 
             related_name='product_category', 
             on_delete=models.SET_NULL, 
@@ -48,10 +53,10 @@ class Product(models.Model):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL,
             related_name='product_created_by',
             on_delete=models.CASCADE)
+    image = models.ImageField(upload_to=f"static/uploads/products/")
 
     def __str__(self):
         return self.name
-
 
 class Order(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL,
@@ -64,5 +69,16 @@ class Order(models.Model):
     products = models.ManyToManyField(Product, 
             related_name='order_product')
 
+
     def __int__(self):
         return self.id
+
+    def __str__(self):
+        cost = 0
+        total = 0
+        for product in self.products.all():
+            cost = cost + product.cost_price
+            total = total + product.member_price
+
+        profit = total - cost
+        return f"Order {self.id} placed {naturaltime(self.created)} by {self.user.username} (cost: £{cost}, total: £{total}, profit: £{profit})"

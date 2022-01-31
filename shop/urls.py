@@ -6,4 +6,5 @@ from . import views
 app_name = 'shop'
 
 urlpatterns = [
+       path('', views.ProductView.as_view(), name='select'),
 ]

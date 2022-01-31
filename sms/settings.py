@@ -28,7 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure--f3-g#21(5+(k6am%syz&pj=ovb%(n01&su2gz76*+4765vnw8'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("SMS_DEBUG", True) 
+DEBUG = os.getenv("SMS_DEBUG", False) 
 
 ALLOWED_HOSTS = ['localhost', 'desolate-retreat-41465.herokuapp.com']
 
@@ -40,7 +40,6 @@ INSTALLED_APPS = [
     'accounts',
     'shop',
     'phonenumber_field',
-    'sms_admin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
