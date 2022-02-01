@@ -32,6 +32,7 @@ class UserMembership(models.Model):
             on_delete=models.SET_NULL, 
             null=True)
     stripe_customer_id = models.CharField(default='', max_length=255)
+    stripe_subscription_id = models.CharField(default='', max_length=255)
     start_date = models.DateTimeField(auto_now_add=True)
     end_date = models.DateTimeField(null=True, blank=True)
 

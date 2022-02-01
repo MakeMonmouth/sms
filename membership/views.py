@@ -36,6 +36,28 @@ class MembershipView(LoginRequiredMixin, ListView):
             context['current_membership'] = None
         return context
 
+class ChangeMembershipView(LoginRequiredMixin, ListView):
+    template_name = 'memberships/change_membership.html'
+    model = Membership
+
+    def get_user_membership(self, user):
+        print(f"User: { user.user.username }")
+        if user.user.username != "":
+            user_membership_qs = UserMembership.objects.filter(user=user.user)
+            if user_membership_qs.exists():
+                return user_membership_qs.first()
+        return None
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(**kwargs)
+        current_membership = self.get_user_membership(self.request)
+        if current_membership is not None:
+            context['current_membership'] = str(current_membership.membership)
+            context['current_membership_cost'] = str(current_membership.membership.price)
+        else:
+            context['current_membership'] = None
+        return context
+
 @csrf_exempt
 def stripe_config(request):
     if request.method == 'GET':
@@ -107,6 +129,7 @@ class SuccessView(TemplateView):
 class CancelledView(TemplateView):
     template_name = 'memberships/cancellation.html'
 
+
 @csrf_exempt
 def stripe_webhook(request):
     stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -129,9 +152,13 @@ def stripe_webhook(request):
     # Handle the checkout.session.completed event
     if event['type'] == 'checkout.session.completed':
         print("Payment was successful.")
-        sub_details = event['data']['object']['client_reference_id'].split(';')
-        user_id = sub_details[0]
-        price_id = sub_details[1]
+        sub_id = event['data']["object"]['subscription']
+        print(f"Subscription: {sub_id}")
+        #line_items = stripe.checkout.Session.list_line_items(session_id, limit=5)
+        #print(f"Line Items: {line_items['data']}")
+        cust_details = event['data']['object']['client_reference_id'].split(';')
+        user_id = cust_details[0]
+        price_id = cust_details[1]
         stripe_cust_id = event['data']['object']['customer']
 
         membership_qs = Membership.objects.filter(stripe_price_id=price_id)
@@ -148,6 +175,7 @@ def stripe_webhook(request):
             newsub.user = user 
             newsub.membership = membership
             newsub.stripe_customer_id = stripe_cust_id
+            newsub.stripe_subscription_id = sub_id
             newsub.save()
         else:
             em = existing_membership.first()

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Change my membership{% endblock %}
+
+{% block content %}
+    <section>
+    <div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+      <h1 class="display-4">Change my membership</h1>
+      <p class="lead">You're currently signed up as a {{ current_membership }} member and being charged £{{ current_membership_cost }}.</p>
+      <p class="lead">If you'd like to change to another option, please select it from the list below</p>
+    </div>
+
+    <div class="container">
+      <div class="card-deck mb-3 text-center">
+         {% for object in object_list %}
+             {% if object.membership_type != 'Core' %}
+              <div class="card mb-4 box-shadow">
+               <div class="card-header">
+                 <h4 class="my-0 font-weight-normal">{{ object.membership_type }} Membership</h4>
+               </div>
+               <div class="card-body">
+                 <h1 class="card-title pricing-card-title">£{{ object.price }} <small class="text-muted">/ mo</small></h1>
+		 {% autoescape off %}
+		     {{ object.description}}
+                 {% endautoescape %}
+		 <form action="/memberships/create-checkout-session/" method="POST">
+		 <input type="hidden" name="priceId" value="{{ object.stripe_price_id}}" />
+		 <button id="submitBtn" type="submit" class="btn btn-lg btn-block btn-outline-primary">Sign up</button>
+		 </form>
+               </div>
+              </div>
+             {% endif %}
+         {% endfor %}
+      </div>
+    </section>
+
+{% endblock %}
+
