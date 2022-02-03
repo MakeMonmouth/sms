@@ -3,11 +3,13 @@
 
 {% block content %}
    {% if current_membership is undefined %}
-    <div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
-      <h1 class="display-4">Become a member</h1>
-      <p class="lead">Want to sign up to Make Monmouth? Join us by selecting a membership option below</p>
+   <header class="masthead">
+    <div class="container">
+      <h1 class="masthead-heading text-uppercase">Become a member</h1>
+      <p class="masthead-subheading">Want to sign up to Make Monmouth? Join us by selecting a membership option below</p>
     </div>
-
+   </header>
+   <section class="page-section">
     <div class="container">
       <div class="card-deck mb-3 text-center">
          {% for object in object_list %}
@@ -78,8 +80,8 @@
                     </div>
                 </div>
             </div>
-        </section>
     {% endif %}
+        </section>
 
 {% endblock %}
 
