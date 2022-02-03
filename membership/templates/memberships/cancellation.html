@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Sorry to see you decided not to join us{% endblock %}
+{% block title %}We couldn't sign you up today{% endblock %}
 
 {% block content %}
 {% if current_membership is not None %}
@@ -17,11 +17,22 @@
 		 <input type="hidden" name="subId" value="{{ current_membership_sub_id}}" />
         <button type="submit">Click here to cancel</button>
     </form>
+</section>
 {% else %}
+<header class="masthead">
+<div class="container">
     <div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
-      <h1 class="display-4">You decided not to join us after all.  Was it something we said?</h1>
+      <h1 class="display-4">Ooops...</h1>
     </div>
-
+</div>
+</header>
+<section class="page-section">
+    <div class="row text-center">
+        <div class="col">
+            <p>We're really sorry but we couldn't process your membership this time.</p>
+            <p>Please <a href="/memberships/">try again</a> or if you're still having issues, <a href="mailto:membership@makemonmouth.co.uk">get in touch</a>.</p>
+        </div>
+    </div>
+</section>
 {% endif %}
 {% endblock %}
-

@@ -1,6 +1,7 @@
 import stripe
 
 from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -57,12 +58,15 @@ class ChangeMembershipView(LoginRequiredMixin, ListView):
             context['current_membership'] = None
         return context
 
+
+@login_required
 @csrf_exempt
 def stripe_config(request):
     if request.method == 'GET':
         stripe_config = {'publicKey': settings.STRIPE_PUBLISHABLE_KEY}
         return JsonResponse(stripe_config, safe=False)
 
+@login_required
 @csrf_exempt
 def create_checkout_session(request):
     if request.method == 'POST':
@@ -84,6 +88,7 @@ def create_checkout_session(request):
                 # We have an existing user/subscription pair
                 user = user_qs.first()
             
+            if hasattr(user, 'stripedetails'):
                 if user.stripedetails.stripe_customer_id == "":
                     print("We have a user but not a customer ID")
                     checkout_session = stripe.checkout.Session.create(
@@ -111,7 +116,7 @@ def create_checkout_session(request):
                         cancel_url=domain_url + 'cancelled/',
                         payment_method_types=['card'],
                         mode='subscription',
-                        customer = request.user.stripedetails.stripe_customer_id,
+                        customer = cust_id,
                         billing_address_collection = "required",
                         line_items=[{
                             'price': request.POST['priceId'],
@@ -143,6 +148,7 @@ def create_checkout_session(request):
 
     return redirect("/memberships/")
 
+@login_required
 @csrf_exempt
 def change_subscription(request):
     if request.method == 'POST':
@@ -194,6 +200,7 @@ def change_subscription(request):
 
     return redirect("/memberships/")
 
+@login_required
 @csrf_exempt
 def cancel_subscription(request):
     if request.method == 'POST':
