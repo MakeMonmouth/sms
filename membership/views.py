@@ -78,34 +78,60 @@ def create_checkout_session(request):
             # For full details see https://stripe.com/docs/api/checkout/sessions/create
 
             # ?session_id={CHECKOUT_SESSION_ID} means the redirect will have the session ID set as a query param
+            user = None
             user_qs = User.objects.filter(id=request.user.id)
             if user_qs.exists():
                 # We have an existing user/subscription pair
                 user = user_qs.first()
-                existing_membership = UserMembership.objects.filter(user=user).first()
+            
+                print("We have a user query set")
+                print(f"User is {user}")
+                print(f"USer has properties: {dir(user)}")
+                print(f"User stripedetails are: {user.stripedetails.stripe_customer_id}")
 
-                checkout_session = stripe.checkout.Session.create(
-                    client_reference_id=f"{request.user.id};{request.POST['priceId']}",
-                    success_url=domain_url + 'success?session_id={CHECKOUT_SESSION_ID}',
-                    cancel_url=domain_url + 'cancelled/',
-                    payment_method_types=['card'],
-                    mode='subscription',
-                    customer_email = request.user.email,
-                    billing_address_collection = "required",
-                    line_items=[{
-                        'price': request.POST['priceId'],
-                        'quantity': 1
-                        }
-                    ]
-                )
+                if user.stripedetails.stripe_customer_id == "":
+                    print("We have a user but not a customer ID")
+                    checkout_session = stripe.checkout.Session.create(
+                        client_reference_id=f"{request.user.id};{request.POST['priceId']}",
+                        success_url=domain_url + 'success?session_id={CHECKOUT_SESSION_ID}',
+                        cancel_url=domain_url + 'cancelled/',
+                        payment_method_types=['card'],
+                        mode='subscription',
+                        customer_email = request.user.email,
+                        billing_address_collection = "required",
+                        line_items=[{
+                            'price': request.POST['priceId'],
+                            'quantity': 1
+                            }
+                        ]
+                    )
+                else:
+                    cust_id = user.stripedetails.stripe_customer_id
+                    print(f"We have a customer ID: {cust_id}")
+                    existing_membership = UserMembership.objects.filter(user=user).first()
+
+                    checkout_session = stripe.checkout.Session.create(
+                        client_reference_id=f"{request.user.id};{request.POST['priceId']}",
+                        success_url=domain_url + 'success?session_id={CHECKOUT_SESSION_ID}',
+                        cancel_url=domain_url + 'cancelled/',
+                        payment_method_types=['card'],
+                        mode='subscription',
+                        customer = request.user.stripedetails.stripe_customer_id,
+                        billing_address_collection = "required",
+                        line_items=[{
+                            'price': request.POST['priceId'],
+                            'quantity': 1
+                            }
+                        ]
+                    )
             else:
+                print("We do not have a user or customer ID")
                 checkout_session = stripe.checkout.Session.create(
                     client_reference_id=f"{request.user.id};{request.POST['priceId']}",
                     success_url=domain_url + 'success?session_id={CHECKOUT_SESSION_ID}',
                     cancel_url=domain_url + 'cancelled/',
                     payment_method_types=['card'],
                     mode='subscription',
-                    customer = existing_membership.stripe_customer_id,
                     customer_email = request.user.email,
                     billing_address_collection = "required",
                     line_items=[{
@@ -297,17 +323,29 @@ def stripe_webhook(request):
             user = user_qs.first()
             existing_membership = UserMembership.objects.filter(user=user)
 
+        print(f"Stripe Customer ID for {user.username} is {stripe_cust_id}")
+        existing_stripe_details = StripeDetails.objects.filter(user=user).first()
+        print(f"Existing details: {existing_stripe_details}")
+        if not existing_stripe_details:
+            nsd = StripeDetails()
+            nsd.user = user
+            nsd.stripe_customer_id = stripe_cust_id
+            nsd.save()
+        else:
+            sd = existing_stripe_details
+            sd.stripe_customer_id = stripe_cust_id
+            sd.save()
+
         if not existing_membership.exists():
             newsub = UserMembership()
             newsub.user = user 
             newsub.membership = membership
-            newsub.stripe_customer_id = stripe_cust_id
             newsub.stripe_subscription_id = sub_id
             newsub.save()
         else:
             em = existing_membership.first()
             em.membership = membership
+            em.stripe_subscription_id = sub_id
             em.save()
-
 
     return HttpResponse(status=200)

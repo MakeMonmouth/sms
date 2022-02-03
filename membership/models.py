@@ -1,6 +1,8 @@
 from django.utils import timezone
 from django.db import models
 from django.conf import settings
+from django.contrib.auth.models import User
+
 # Create your models here.
 MEMBERSHIP_CHOICES = (
 ('Core', 'core'),
@@ -39,10 +41,9 @@ class UserMembership(models.Model):
        return f"{self.user.username} - {self.membership.membership_type}"
 
 class StripeDetails(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL,
-            related_name='stripe_details',
+    user = models.OneToOneField(User,
             on_delete=models.CASCADE)
-    stripe_customer_id = models.CharField(default='', max_length=255)
+    stripe_customer_id = models.CharField(default='', max_length=255, blank=True)
 
     def __str__(self):
       return self.stripe_customer_id
