@@ -84,11 +84,6 @@ def create_checkout_session(request):
                 # We have an existing user/subscription pair
                 user = user_qs.first()
             
-                print("We have a user query set")
-                print(f"User is {user}")
-                print(f"USer has properties: {dir(user)}")
-                print(f"User stripedetails are: {user.stripedetails.stripe_customer_id}")
-
                 if user.stripedetails.stripe_customer_id == "":
                     print("We have a user but not a customer ID")
                     checkout_session = stripe.checkout.Session.create(
@@ -231,7 +226,6 @@ def cancel_subscription(request):
                 can_sub = stripe.Subscription.delete(
                         request.POST['subId']
                         )
-                print(can_sub)
                 if can_sub['id'] is not None:
                     existing_membership.delete()
                 else:
@@ -323,9 +317,7 @@ def stripe_webhook(request):
             user = user_qs.first()
             existing_membership = UserMembership.objects.filter(user=user)
 
-        print(f"Stripe Customer ID for {user.username} is {stripe_cust_id}")
         existing_stripe_details = StripeDetails.objects.filter(user=user).first()
-        print(f"Existing details: {existing_stripe_details}")
         if not existing_stripe_details:
             nsd = StripeDetails()
             nsd.user = user
