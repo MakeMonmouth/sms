@@ -31,20 +31,18 @@ class UserMembership(models.Model):
             related_name='user_membership', 
             on_delete=models.SET_NULL, 
             null=True)
-    stripe_customer_id = models.CharField(default='', max_length=255)
     stripe_subscription_id = models.CharField(default='', max_length=255)
     start_date = models.DateTimeField(auto_now_add=True)
     end_date = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-       #return self.user.username
        return f"{self.user.username} - {self.membership.membership_type}"
 
-class Subscription(models.Model):
-    user_membership = models.ForeignKey(UserMembership,
-            related_name='subscription',
+class StripeDetails(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL,
+            related_name='stripe_details',
             on_delete=models.CASCADE)
-    active = models.BooleanField(default=True)
+    stripe_customer_id = models.CharField(default='', max_length=255)
 
     def __str__(self):
-      return self.user_membership.user.username
+      return self.stripe_customer_id

@@ -2,9 +2,21 @@
 {% block title %}Thanks for Signing Up!{% endblock %}
 
 {% block content %}
-<section>
+<header class="masthead">
+<div class="container">
+    <div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+      <h1 class="display-4">Success!</h1>
+    </div>
+</div>
+</header>
+<section class="page-section">
     <div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
       <h1 class="display-4">You're now a member of Make Monmouth!</h1>
+    </div>
+    <div class="row text-center">
+        <div class="col">
+        <p class="lead">You've been subscribed as a {{ current_membership }} member costing £{{ current_membership_cost }}/month</p>.
+        </div>
     </div>
 </section>
 {% endblock %}

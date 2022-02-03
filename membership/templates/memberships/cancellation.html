@@ -2,8 +2,26 @@
 {% block title %}Sorry to see you decided not to join us{% endblock %}
 
 {% block content %}
+{% if current_membership is not None %}
+<header class="masthead">
+<div class="container">
+    <div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+      <h1 class="display-4">Sorry to see you go!</h1>
+    </div>
+</div>
+</header>
+<section class="page-section">
+    <div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+    <form action="/memberships/cancel-subscription/" method="POST">
+        {% csrf_token %}
+		 <input type="hidden" name="subId" value="{{ current_membership_sub_id}}" />
+        <button type="submit">Click here to cancel</button>
+    </form>
+{% else %}
     <div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
       <h1 class="display-4">You decided not to join us after all.  Was it something we said?</h1>
     </div>
+
+{% endif %}
 {% endblock %}
 

@@ -11,7 +11,7 @@ from django.views.generic.base import TemplateView
 from django.views.generic import ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-from membership.models import Membership, UserMembership, Subscription
+from membership.models import Membership, UserMembership, StripeDetails
 
 
 class MembershipView(LoginRequiredMixin, ListView):
@@ -20,7 +20,6 @@ class MembershipView(LoginRequiredMixin, ListView):
 
 
     def get_user_membership(self, user):
-        print(f"User: { user.user.username }")
         if user.user.username != "":
             user_membership_qs = UserMembership.objects.filter(user=user.user)
             if user_membership_qs.exists():
@@ -41,7 +40,6 @@ class ChangeMembershipView(LoginRequiredMixin, ListView):
     model = Membership
 
     def get_user_membership(self, user):
-        print(f"User: { user.user.username }")
         if user.user.username != "":
             user_membership_qs = UserMembership.objects.filter(user=user.user)
             if user_membership_qs.exists():
@@ -119,7 +117,7 @@ def create_checkout_session(request):
             response = checkout_session.url
             return redirect(response)
         except Exception as e:
-            print(e)
+            print(f"Error: {e}")
             return redirect("/memberships/cancelled/")
 
     return redirect("/memberships/")
@@ -170,16 +168,97 @@ def change_subscription(request):
                 else:
                     print("No new sub id found, change failed")
         except Exception as e:
-            print(e)
+            print(f"Error: {e}")
+            return redirect("/memberships/cancelled/")
+
+    return redirect("/memberships/")
+
+@csrf_exempt
+def cancel_subscription(request):
+    if request.method == 'POST':
+        domain_url = f"{request.build_absolute_uri('/')}memberships/"
+        stripe.api_key = settings.STRIPE_SECRET_KEY
+        try:
+            # Create new Checkout Session for the order
+            # Other optional params include:
+            # [billing_address_collection] - to display billing address details on the page
+            # [customer] - if you have an existing Stripe Customer ID
+            # [payment_intent_data] - capture the payment later
+            # [customer_email] - prefill the email input in the form
+            # For full details see https://stripe.com/docs/api/checkout/sessions/create
+
+            # ?session_id={CHECKOUT_SESSION_ID} means the redirect will have the session ID set as a query param
+            user_qs = User.objects.filter(id=request.user.id)
+            if user_qs.exists():
+                # We have an existing user/subscription pair
+                user = user_qs.first()
+                existing_membership = UserMembership.objects.filter(user=user).first()
+
+                # Get the current subscription details so we can modify them
+                existing_sub = stripe.Subscription.retrieve(
+                        request.POST['subId']
+                        )
+
+                esub_id = existing_sub['items']['data'][0]['id']
+
+                print("Requesting Cancellation")
+                can_sub = stripe.Subscription.delete(
+                        request.POST['subId']
+                        )
+                print(can_sub)
+                if can_sub['id'] is not None:
+                    existing_membership.delete()
+                else:
+                    print("No new sub id found, change failed")
+        except Exception as e:
+            print(f"Error: {e}")
             return redirect("/memberships/cancelled/")
 
     return redirect("/memberships/")
 
 class SuccessView(TemplateView):
     template_name = 'memberships/success.html'
+    model = Membership
+
+    def get_user_membership(self, user):
+        if user.user.username != "":
+            user_membership_qs = UserMembership.objects.filter(user=user.user)
+            if user_membership_qs.exists():
+                return user_membership_qs.first()
+        return None
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(**kwargs)
+        current_membership = self.get_user_membership(self.request)
+        if current_membership is not None:
+            context['current_membership'] = str(current_membership.membership)
+            context['current_membership_cost'] = str(current_membership.membership.price)
+            context['current_membership_sub_id'] = str(current_membership.stripe_subscription_id)
+        else:
+            context['current_membership'] = None
+        return context
 
 class CancelledView(TemplateView):
     template_name = 'memberships/cancellation.html'
+    model = Membership
+
+    def get_user_membership(self, user):
+        if user.user.username != "":
+            user_membership_qs = UserMembership.objects.filter(user=user.user)
+            if user_membership_qs.exists():
+                return user_membership_qs.first()
+        return None
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(**kwargs)
+        current_membership = self.get_user_membership(self.request)
+        if current_membership is not None:
+            context['current_membership'] = str(current_membership.membership)
+            context['current_membership_cost'] = str(current_membership.membership.price)
+            context['current_membership_sub_id'] = str(current_membership.stripe_subscription_id)
+        else:
+            context['current_membership'] = None
+        return context
 
 
 @csrf_exempt
@@ -203,9 +282,7 @@ def stripe_webhook(request):
 
     # Handle the checkout.session.completed event
     if event['type'] == 'checkout.session.completed':
-        print("Payment was successful.")
         sub_id = event['data']["object"]['subscription']
-        print(f"Subscription: {sub_id}")
         cust_details = event['data']['object']['client_reference_id'].split(';')
         user_id = cust_details[0]
         price_id = cust_details[1]

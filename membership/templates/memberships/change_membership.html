@@ -32,6 +32,20 @@
               </div>
              {% endif %}
          {% endfor %}
+              <div class="card mb-4 box-shadow">
+               <div class="card-header">
+                 <h4 class="my-0 font-weight-normal">Cancel My Membership</h4>
+               </div>
+               <div class="card-body">
+                   <p>Want to leave us? That's fine, there's no hard feelings</p>
+                   <p>You're welcome back at any time, but if you really want to go then just click the button below!</p>
+		 <form action="/memberships/cancel-subscription/" method="POST">
+         {% csrf_token %}
+		 <input type="hidden" name="subId" value="{{ current_membership_sub_id}}" />
+		 <button id="submitBtn" type="submit" class="btn btn-lg btn-block btn-outline-primary">Cancel my subscription</button>
+		 </form>
+               </div>
+              </div>
       </div>
     </section>
 
