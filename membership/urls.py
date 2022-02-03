@@ -12,5 +12,6 @@ urlpatterns = [
        path('success/', views.SuccessView.as_view()), # new
        path('cancelled/', views.CancelledView.as_view()), # new
        path('webhook/', views.stripe_webhook), # new
-       path('update/', views.ChangeMembershipView.as_view(), name='update'), # new
+       path('change-subscription/', views.ChangeMembershipView.as_view(), name='update'), # new
+       path('change-subscription-checkout/', views.change_subscription), # new
 ]

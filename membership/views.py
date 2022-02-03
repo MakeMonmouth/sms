@@ -54,6 +54,7 @@ class ChangeMembershipView(LoginRequiredMixin, ListView):
         if current_membership is not None:
             context['current_membership'] = str(current_membership.membership)
             context['current_membership_cost'] = str(current_membership.membership.price)
+            context['current_membership_sub_id'] = str(current_membership.stripe_subscription_id)
         else:
             context['current_membership'] = None
         return context
@@ -123,6 +124,57 @@ def create_checkout_session(request):
 
     return redirect("/memberships/")
 
+@csrf_exempt
+def change_subscription(request):
+    if request.method == 'POST':
+        domain_url = f"{request.build_absolute_uri('/')}memberships/"
+        stripe.api_key = settings.STRIPE_SECRET_KEY
+        try:
+            # Create new Checkout Session for the order
+            # Other optional params include:
+            # [billing_address_collection] - to display billing address details on the page
+            # [customer] - if you have an existing Stripe Customer ID
+            # [payment_intent_data] - capture the payment later
+            # [customer_email] - prefill the email input in the form
+            # For full details see https://stripe.com/docs/api/checkout/sessions/create
+
+            # ?session_id={CHECKOUT_SESSION_ID} means the redirect will have the session ID set as a query param
+            user_qs = User.objects.filter(id=request.user.id)
+            if user_qs.exists():
+                # We have an existing user/subscription pair
+                user = user_qs.first()
+                existing_membership = UserMembership.objects.filter(user=user).first()
+
+                # Get the current subscription details so we can modify them
+                existing_sub = stripe.Subscription.retrieve(
+                        request.POST['subId']
+                        )
+
+                esub_id = existing_sub['items']['data'][0]['id']
+
+                newsub = stripe.Subscription.modify(
+                    request.POST['subId'],
+                    items=[{
+                        'id': esub_id,
+                        'price': request.POST['priceId'],
+                        'quantity': 1
+                        }
+                    ]
+                )
+                if newsub['id'] is not None:
+                    sub_level = Membership.objects.filter(stripe_price_id=request.POST['priceId']).first()
+                    existing_membership.stripe_subscription_id = newsub['id']
+                    existing_membership.membership = sub_level
+                    existing_membership.save()
+                    return redirect("/memberships/success/")
+                else:
+                    print("No new sub id found, change failed")
+        except Exception as e:
+            print(e)
+            return redirect("/memberships/cancelled/")
+
+    return redirect("/memberships/")
+
 class SuccessView(TemplateView):
     template_name = 'memberships/success.html'
 
@@ -154,8 +206,6 @@ def stripe_webhook(request):
         print("Payment was successful.")
         sub_id = event['data']["object"]['subscription']
         print(f"Subscription: {sub_id}")
-        #line_items = stripe.checkout.Session.list_line_items(session_id, limit=5)
-        #print(f"Line Items: {line_items['data']}")
         cust_details = event['data']['object']['client_reference_id'].split(';')
         user_id = cust_details[0]
         price_id = cust_details[1]

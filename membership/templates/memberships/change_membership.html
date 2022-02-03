@@ -22,7 +22,9 @@
 		 {% autoescape off %}
 		     {{ object.description}}
                  {% endautoescape %}
-		 <form action="/memberships/create-checkout-session/" method="POST">
+		 <form action="/memberships/change-subscription-checkout/" method="POST">
+         {% csrf_token %}
+		 <input type="hidden" name="subId" value="{{ current_membership_sub_id}}" />
 		 <input type="hidden" name="priceId" value="{{ object.stripe_price_id}}" />
 		 <button id="submitBtn" type="submit" class="btn btn-lg btn-block btn-outline-primary">Sign up</button>
 		 </form>
