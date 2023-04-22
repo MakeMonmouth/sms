@@ -9,6 +9,6 @@ idna==3.3
 psycopg2==2.9.3
 requests==2.27.1
 soupsieve==2.3.1
-sqlparse==0.4.2
+sqlparse==0.4.4
 stripe==2.65.0
 urllib3==1.26.8
